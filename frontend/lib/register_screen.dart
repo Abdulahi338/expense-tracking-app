@@ -103,7 +103,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     // TODO: Implement register logic
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => const HomeScreen()),
+                      MaterialPageRoute(
+                        builder: (context) => const HomeScreen(),
+                      ),
                     );
                   }
                 },
