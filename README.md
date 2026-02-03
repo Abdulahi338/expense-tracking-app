@@ -108,3 +108,43 @@ Quick Notes (for README)
 Content-Type header
 
 For POST/PUT requests:
+
+
+## note
+Postman tests pass
+
+✅ POST http://localhost:5000/api/expenses
+
+✅ GET http://localhost:5000/api/expenses
+
+✅ PUT http://localhost:5000/api/expenses/:id
+
+✅ DELETE http://localhost:5000/api/expenses/:id
+
+
+#### Reports
+
+http://localhost:5000/api/reports/daily?year=2026&month=2&day=1
+
+http://localhost:5000/api/reports/monthly?year=2026&month=2
+
+http://localhost:5000/api/reports/yearly?year=2026
+
+
+## Today repor
+http://localhost:5000/api/reports/today
+
+## out put 
+{
+  "type": "today",
+  "year": 2026,
+  "month": 2,
+  "day": 2,
+  "totalIncome": 0,
+  "totalExpense": 0,
+  "balance": 0,
+  "incomeCount": 0,
+  "expenseCount": 0
+}
+
+
