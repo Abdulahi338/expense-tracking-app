@@ -24,3 +24,4 @@ function getRange(type, year, month, day) {
   return null;
 }
 
+
