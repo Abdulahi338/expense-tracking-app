@@ -5,11 +5,47 @@ const bcrypt = require("bcryptjs");
 exports.register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
+exports.login = async (req, res) => {
+  try {
+    const { email, password, role } = req.body;
 
-    const exist = await User.findOne({ email });
+    // Hubi email
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "Email not found" });
+    }
+
+    // Hubi password
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Wrong password" });
+    }
+
+    // Hubi role haddii la soo diro
+    if (role && user.role !== role) {
+      return res.status(403).json({ message: "Role not allowed" });
+    }
+
+    res.json({
+      message: "Login successful",
+      user: {
+        id: user._id,
+        username: user.username,
+        role: user.role,
+      },
+    });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+    const exist = await User.findOne({ email, username });
     if (exist) {
       return res.json({ message: "User already exists" });
     }
+
+    
 
     const hashed = await bcrypt.hash(password, 10);
 
