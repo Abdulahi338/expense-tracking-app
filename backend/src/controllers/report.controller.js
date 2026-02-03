@@ -137,6 +137,44 @@ exports.yearlyReport = async (req, res) => {
 };
 
 
+// // GET /api/reports/today
+exports.todayReport = async (req, res) => {
+  try {
+    const now = new Date();
+
+    const year = now.getFullYear();
+    const month = now.getMonth() + 1; // 1-12
+    const day = now.getDate(); // 1-31
+
+    const start = new Date(year, month - 1, day);
+    const end = new Date(year, month - 1, day + 1);
+
+    const incomes = await Income.find({ date: { $gte: start, $lt: end } });
+    const expenses = await Expense.find({ date: { $gte: start, $lt: end } });
+
+    let totalIncome = 0;
+    for (const i of incomes) totalIncome += Number(i.amount);
+
+    let totalExpense = 0;
+    for (const e of expenses) totalExpense += Number(e.amount);
+
+    return res.json({
+      type: "today",
+      year,
+      month,
+      day,
+      totalIncome,
+      totalExpense,
+      balance: totalIncome - totalExpense,
+      incomeCount: incomes.length,
+      expenseCount: expenses.length,
+    });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};
+
+
 
 
 
