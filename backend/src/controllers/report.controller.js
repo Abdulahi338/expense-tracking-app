@@ -65,5 +65,44 @@ exports.dailyReport = async (req, res) => {
 };
 
 
+// // GET /api/reports/monthly?year=2026&month=2
+exports.monthlyReport = async (req, res) => {
+  try {
+    const year = Number(req.query.year);
+    const month = Number(req.query.month);
+
+    if (!year || !month) {
+      return res.status(400).json({ message: "year and month are required" });
+    }
+
+    const range = getRange("monthly", year, month);
+
+    const incomes = await Income.find({ date: { $gte: range.start, $lt: range.end } });
+    const expenses = await Expense.find({ date: { $gte: range.start, $lt: range.end } });
+
+    let totalIncome = 0;
+    for (const i of incomes) totalIncome += Number(i.amount);
+
+    let totalExpense = 0;
+    for (const e of expenses) totalExpense += Number(e.amount);
+
+    return res.json({
+      type: "monthly",
+      year,
+      month,
+      totalIncome,
+      totalExpense,
+      balance: totalIncome - totalExpense,
+      incomeCount: incomes.length,
+      expenseCount: expenses.length,
+    });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};
+
+
+
+
 
 
