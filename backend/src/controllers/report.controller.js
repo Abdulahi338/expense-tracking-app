@@ -102,6 +102,42 @@ exports.monthlyReport = async (req, res) => {
 };
 
 
+// // GET /api/reports/yearly?year=2026
+exports.yearlyReport = async (req, res) => {
+  try {
+    const year = Number(req.query.year);
+
+    if (!year) {
+      return res.status(400).json({ message: "year is required" });
+    }
+
+    const range = getRange("yearly", year);
+
+    const incomes = await Income.find({ date: { $gte: range.start, $lt: range.end } });
+    const expenses = await Expense.find({ date: { $gte: range.start, $lt: range.end } });
+
+    let totalIncome = 0;
+    for (const i of incomes) totalIncome += Number(i.amount);
+
+    let totalExpense = 0;
+    for (const e of expenses) totalExpense += Number(e.amount);
+
+    return res.json({
+      type: "yearly",
+      year,
+      totalIncome,
+      totalExpense,
+      balance: totalIncome - totalExpense,
+      incomeCount: incomes.length,
+      expenseCount: expenses.length,
+    });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};
+
+
+
 
 
 
