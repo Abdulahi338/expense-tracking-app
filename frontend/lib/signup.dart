@@ -1,23 +1,5 @@
  import 'package:flutter/material.dart';
 import 'dart:convert';
-
-class ExpenseTrackingSystem extends StatelessWidget {
-  const ExpenseTrackingSystem({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        fontFamily: 'Sans-Serif',
-        scaffoldBackgroundColor: const Color(0xFFF8F9FE),
-      ),
-      home: RegisterScreen(),
-    );
-  }
-}
-
 // --- REGISTER SCREEN (Task #2 - Part A) ---
 class RegisterScreen extends StatefulWidget {
   @override
