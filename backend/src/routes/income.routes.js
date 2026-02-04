@@ -1,9 +1,10 @@
-const express = require("express");
-const router = express.Router();
+const router = require("express").Router();
+const { addIncome, getIncomes, deleteIncome } = require("../controllers/income.controller");
+const auth = require("../middlewares/auth.middleware");
 
-const { createIncome } = require("../controllers/income.controller");
-const { validateIncome } = require("../validators/income.validator");
-
-router.post("/", validateIncome, createIncome);
+// All routes here should be protected by auth
+router.post("/add-income", auth, addIncome);
+router.get("/get-incomes", auth, getIncomes);
+router.delete("/delete-income/:id", auth, deleteIncome);
 
 module.exports = router;

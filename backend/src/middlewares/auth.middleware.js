@@ -1,7 +1,7 @@
 // src/middlewares/auth.middleware.js
 const jwt = require("jsonwebtoken");
 
-const JWT_SECRET = "Abc1234"; s
+const JWT_SECRET = "Abc1234";
 
 module.exports = function authenticateToken(req, res, next) {
   const authHeader = req.headers["authorization"];

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class AddIncomePage extends StatefulWidget {
   const AddIncomePage({super.key});
@@ -37,11 +39,50 @@ class _AddIncomePageState extends State<AddIncomePage> {
     }
   }
 
-  void saveForm() {
+  bool _isLoading = false;
+
+  Future<void> saveForm() async {
     if (_formKey.currentState!.validate()) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Form is valid ✅")),
-      );
+      setState(() => _isLoading = true);
+      
+      try {
+        final url = Uri.parse('http://localhost:5000/api/incomes');
+        
+        final body = {
+            "title": selectedSource, // Default title to source
+            "amount": double.parse(amountController.text),
+            "category": selectedSource,
+            "description": descriptionController.text,
+            "date": DateTime.parse(dateController.text).toIso8601String(),
+        };
+
+        final response = await http.post(
+          url,
+          headers: {'Content-Type': 'application/json'},
+          body: jsonEncode(body),
+        );
+
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          if (!mounted) return;
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Income Added Successfully ✅", style: TextStyle(color: Colors.white)), backgroundColor: Colors.green),
+          );
+          Navigator.pop(context); // Go back
+        } else {
+             if (!mounted) return;
+             ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Failed to save income", style: TextStyle(color: Colors.white)), backgroundColor: Colors.red),
+             );
+        }
+      } catch (e) {
+         if (mounted) {
+             ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text("Error: $e", style: const TextStyle(color: Colors.white)), backgroundColor: Colors.red),
+             );
+         }
+      } finally {
+        if(mounted) setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -159,8 +200,8 @@ class _AddIncomePageState extends State<AddIncomePage> {
                                 ),
                                 elevation: 0,
                               ),
-                              onPressed: saveForm,
-                              child: const Text(
+                              onPressed: _isLoading ? null : saveForm,
+                              child: _isLoading ? const CircularProgressIndicator(color: Colors.white) : const Text(
                                 "Save",
                                 style: TextStyle(
                                   fontSize: 16,

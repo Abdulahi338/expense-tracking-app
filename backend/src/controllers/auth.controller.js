@@ -1,51 +1,18 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+
+const JWT_SECRET = "Abc1234"; // Make sure to match middleware or use .env
 
 /* ===== REGISTER ===== */
 exports.register = async (req, res) => {
   try {
     const { username, email, password } = req.body;
-exports.login = async (req, res) => {
-  try {
-    const { email, password, role } = req.body;
 
-    // Hubi email
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ message: "Email not found" });
-    }
-
-    // Hubi password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: "Wrong password" });
-    }
-
-    // Hubi role haddii la soo diro
-    if (role && user.role !== role) {
-      return res.status(403).json({ message: "Role not allowed" });
-    }
-
-    res.json({
-      message: "Login successful",
-      user: {
-        id: user._id,
-        username: user.username,
-        role: user.role,
-      },
-    });
-
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-};
-
-    const exist = await User.findOne({ email, username });
+    const exist = await User.findOne({ email });
     if (exist) {
-      return res.json({ message: "User already exists" });
+      return res.status(400).json({ message: "User already exists" });
     }
-
-    
 
     const hashed = await bcrypt.hash(password, 10);
 
@@ -56,10 +23,10 @@ exports.login = async (req, res) => {
     });
 
     await user.save();
-    res.json({ message: "User registered successfully" });
+    res.status(201).json({ message: "User registered successfully" });
 
   } catch (err) {
-    res.json({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
 };
 
@@ -68,19 +35,36 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Hubi email
     const user = await User.findOne({ email });
     if (!user) {
-      return res.json({ message: "User not found" });
+      return res.status(400).json({ message: "User not found" });
     }
 
+    // Hubi password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.json({ message: "Wrong password" });
+      return res.status(400).json({ message: "Wrong password" });
     }
 
-    res.json({ message: "Login successful" });
+    const token = jwt.sign(
+      { id: user._id, role: user.role || 'user' },
+      JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    res.json({
+      message: "Login successful",
+      token,
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+      },
+    });
 
   } catch (err) {
-    res.json({ error: err.message });
+    res.status(500).json({ error: err.message });
   }
 };
