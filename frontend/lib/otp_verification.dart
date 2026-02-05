@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'login.dart';
 
 class OTPVerificationScreen extends StatefulWidget {
   final String emailOrPhone;
@@ -47,15 +50,46 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
 
     setState(() => _isLoading = true);
     
-    // Simulate API verification
-    await Future.delayed(const Duration(seconds: 2));
-
-    if (mounted) {
-      setState(() => _isLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Code Verified Successfully!")),
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost:5000/api/auth/verify-otp'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'email': widget.emailOrPhone,
+          'code': otp,
+        }),
       );
-      // Logic to navigate to "Reset Password" screen would go here
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Code Verified Successfully!")),
+          );
+          // For now, navigate back to login as "password reset demo"
+          // In real app, navigate to ResetPasswordScreen
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const LoginScreen()),
+            (route) => false,
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(data['message'] ?? "Invalid code")),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: ${e.toString()}")),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -150,10 +184,28 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                       children: [
                         const Text("Didn't get the code? ", style: TextStyle(color: Colors.grey)),
                         GestureDetector(
-                          onTap: () {
-                             ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text("Code Resent!")),
-                            );
+                          onTap: () async {
+                             // Call forgot-password again to resend code
+                             try {
+                               final response = await http.post(
+                                 Uri.parse('http://localhost:5000/api/auth/forgot-password'),
+                                 headers: {'Content-Type': 'application/json'},
+                                 body: jsonEncode({'email': widget.emailOrPhone}),
+                               );
+                               if (response.statusCode == 200) {
+                                 final data = jsonDecode(response.body);
+                                 final code = data['code'];
+                                 if (mounted) {
+                                   ScaffoldMessenger.of(context).showSnackBar(
+                                     SnackBar(
+                                       duration: const Duration(seconds: 10),
+                                       backgroundColor: Colors.blue.shade800,
+                                       content: Text("New Code: $code (Resent to your device)"),
+                                     ),
+                                   );
+                                 }
+                               }
+                             } catch (_) {}
                           },
                           child: const Text(
                             "Resend",

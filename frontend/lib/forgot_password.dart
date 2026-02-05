@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'otp_verification.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
@@ -13,31 +15,61 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   bool _isLoading = false;
 
   Future<void> _sendResetLink() async {
-    if (_emailController.text.isEmpty) {
+    final email = _emailController.text;
+    if (email.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Please enter your email")),
       );
       return;
     }
 
-    setState(() {
-      _isLoading = true;
-    });
+    setState(() => _isLoading = true);
 
-    // Simulate Network Call (Since backend endpoint is not yet available)
-    await Future.delayed(const Duration(seconds: 2));
+    try {
+      final response = await http.post(
+        Uri.parse('http://localhost:5000/api/auth/forgot-password'),
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({'email': email}),
+      );
 
-    if (mounted) {
-      setState(() {
-        _isLoading = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Reset link sent if email exists")),
-      );
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => OTPVerificationScreen(emailOrPhone: _emailController.text)),
-      );
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        final code = data['code'];
+        if (mounted) {
+           // Simulate a push notification on the device
+           ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              duration: const Duration(seconds: 10),
+              backgroundColor: Colors.blue.shade800,
+              content: Text(
+                "Verification Code: $code (Sent to your device)",
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              action: SnackBarAction(label: "COPY", textColor: Colors.white, onPressed: () {}),
+            ),
+          );
+          
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => OTPVerificationScreen(emailOrPhone: email)),
+          );
+        }
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(data['message'] ?? "Error occurred")),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Error: ${e.toString()}")),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 

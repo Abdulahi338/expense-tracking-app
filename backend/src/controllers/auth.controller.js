@@ -68,3 +68,52 @@ exports.login = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+/* ===== FORGOT PASSWORD ===== */
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Generate random 4-digit code
+    const code = Math.floor(1000 + Math.random() * 9000).toString();
+
+    // Save to user (valid for 10 mins)
+    user.resetCode = code;
+    user.resetCodeExpires = Date.now() + 10 * 60 * 1000;
+    await user.save();
+
+    // In a real app, you would send an email/SMS here.
+    // For this demo, we return it so the frontend can show a notification.
+    res.json({ message: "Verification code generated", code });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+/* ===== VERIFY OTP ===== */
+exports.verifyOTP = async (req, res) => {
+  try {
+    const { email, code } = req.body;
+    const user = await User.findOne({
+      email,
+      resetCode: code,
+      resetCodeExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired code" });
+    }
+
+    // Code is valid - in a real app you might return a one-time token for reset
+    res.json({ message: "Code verified successfully" });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
