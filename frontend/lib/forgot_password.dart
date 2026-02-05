@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'otp_verification.dart';
+import 'package:get/get.dart';
+import 'app_routes.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -17,9 +18,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   Future<void> _sendResetLink() async {
     final email = _emailController.text;
     if (email.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter your email")),
-      );
+      Get.snackbar("Error", "Please enter your email", snackPosition: SnackPosition.BOTTOM);
       return;
     }
 
@@ -38,36 +37,23 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         final code = data['code'];
         if (mounted) {
            // Simulate a push notification on the device
-           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              duration: const Duration(seconds: 10),
-              backgroundColor: Colors.blue.shade800,
-              content: Text(
-                "Verification Code: $code (Sent to your device)",
-                style: const TextStyle(fontWeight: FontWeight.bold),
-              ),
-              action: SnackBarAction(label: "COPY", textColor: Colors.white, onPressed: () {}),
-            ),
-          );
+           Get.snackbar(
+             "Verification Code", 
+             "Code: $code (Sent to your device)",
+             duration: const Duration(seconds: 10),
+             backgroundColor: Colors.blue.shade800,
+             colorText: Colors.white,
+             snackPosition: SnackPosition.TOP,
+             mainButton: TextButton(onPressed: () {}, child: const Text("COPY", style: TextStyle(color: Colors.white))),
+           );
           
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => OTPVerificationScreen(emailOrPhone: email)),
-          );
+          Get.toNamed(AppRoutes.otpVerification, arguments: email);
         }
       } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(data['message'] ?? "Error occurred")),
-          );
-        }
+        Get.snackbar("Error", data['message'] ?? "Error occurred", snackPosition: SnackPosition.BOTTOM);
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: ${e.toString()}")),
-        );
-      }
+      Get.snackbar("Error", "Error: ${e.toString()}", snackPosition: SnackPosition.BOTTOM);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -89,8 +75,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 child: Container(
                   width: 320,
                   height: 320,
-                  decoration: BoxDecoration(
-                     color: const Color(0xFFE3F2FD), // Light blue circle matching design
+                  decoration: const BoxDecoration(
+                     color: Color(0xFFE3F2FD), // Light blue circle matching design
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -101,7 +87,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 top: 60,
                 left: 20,
                 child: GestureDetector(
-                  onTap: () => Navigator.pop(context),
+                  onTap: () => Get.back(),
                   child: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(

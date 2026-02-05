@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'login.dart';
+import 'package:get/get.dart';
+import 'app_routes.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   final String email;
@@ -24,16 +25,12 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
     final confirmPassword = _confirmPasswordController.text;
 
     if (password.isEmpty || confirmPassword.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill all fields")),
-      );
+      Get.snackbar("Error", "Please fill all fields", snackPosition: SnackPosition.BOTTOM);
       return;
     }
 
     if (password != confirmPassword) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Passwords do not match")),
-      );
+      Get.snackbar("Error", "Passwords do not match", snackPosition: SnackPosition.BOTTOM);
       return;
     }
 
@@ -57,28 +54,18 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           _showSuccessDialog();
         }
       } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(data['message'] ?? "Failed to reset password")),
-          );
-        }
+        Get.snackbar("Error", data['message'] ?? "Failed to reset password", snackPosition: SnackPosition.BOTTOM);
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: ${e.toString()}")),
-        );
-      }
+      Get.snackbar("Error", "Error: ${e.toString()}", snackPosition: SnackPosition.BOTTOM);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
   void _showSuccessDialog() {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
+    Get.dialog(
+      AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: const Column(
           children: [
@@ -96,13 +83,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             child: SizedBox(
               width: 150,
               child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (_) => const LoginScreen()),
-                    (route) => false,
-                  );
-                },
+                onPressed: () => Get.offAllNamed(AppRoutes.login),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
@@ -114,6 +95,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
           const SizedBox(height: 10),
         ],
       ),
+      barrierDismissible: false,
     );
   }
 
@@ -145,7 +127,7 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
                 top: 60,
                 left: 20,
                 child: GestureDetector(
-                  onTap: () => Navigator.pop(context),
+                  onTap: () => Get.back(),
                   child: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(

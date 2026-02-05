@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'login.dart';
+import 'package:get/get.dart';
+import 'app_routes.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -97,12 +98,7 @@ class WelcomeScreen extends StatelessWidget {
                 width: double.infinity,
                 height: 55,
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const LoginScreen()),
-                    );
-                  },
+                  onPressed: () => Get.toNamed(AppRoutes.login),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF64B5F6), // Light blue button
                     shape: RoundedRectangleBorder(

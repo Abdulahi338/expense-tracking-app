@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'login.dart';
-import 'reset_password.dart';
+import 'package:get/get.dart';
+import 'app_routes.dart';
 
 class OTPVerificationScreen extends StatefulWidget {
   final String emailOrPhone;
@@ -43,9 +43,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
   Future<void> _verifyOTP() async {
     String otp = _c1.text + _c2.text + _c3.text + _c4.text;
     if (otp.length < 4) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter full code")),
-      );
+      Get.snackbar("Error", "Please enter full code", snackPosition: SnackPosition.BOTTOM);
       return;
     }
 
@@ -64,34 +62,17 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
       final data = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Code Verified Successfully!")),
-          );
-          
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => ResetPasswordScreen(
-                email: widget.emailOrPhone,
-                code: otp,
-              ),
-            ),
-          );
-        }
+        Get.snackbar("Success", "Code Verified Successfully!", snackPosition: SnackPosition.BOTTOM);
+        
+        Get.toNamed(AppRoutes.resetPassword, arguments: {
+          'email': widget.emailOrPhone,
+          'code': otp,
+        });
       } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(data['message'] ?? "Invalid code")),
-          );
-        }
+        Get.snackbar("Error", data['message'] ?? "Invalid code", snackPosition: SnackPosition.BOTTOM);
       }
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: ${e.toString()}")),
-        );
-      }
+      Get.snackbar("Error", "Error: ${e.toString()}", snackPosition: SnackPosition.BOTTOM);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -113,8 +94,8 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                 child: Container(
                   width: 320,
                   height: 320,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE3F2FD), // Light blue circle
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFE3F2FD), // Light blue circle
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -125,7 +106,7 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                 top: 60,
                 left: 20,
                 child: GestureDetector(
-                  onTap: () => Navigator.pop(context),
+                  onTap: () => Get.back(),
                   child: Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
@@ -196,19 +177,18 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
                                  headers: {'Content-Type': 'application/json'},
                                  body: jsonEncode({'email': widget.emailOrPhone}),
                                );
-                               if (response.statusCode == 200) {
-                                 final data = jsonDecode(response.body);
-                                 final code = data['code'];
-                                 if (mounted) {
-                                   ScaffoldMessenger.of(context).showSnackBar(
-                                     SnackBar(
-                                       duration: const Duration(seconds: 10),
-                                       backgroundColor: Colors.blue.shade800,
-                                       content: Text("New Code: $code (Resent to your device)"),
-                                     ),
-                                   );
-                                 }
-                               }
+                                 if (response.statusCode == 200) {
+                                  final data = jsonDecode(response.body);
+                                  final code = data['code'];
+                                  Get.snackbar(
+                                    "New Code", 
+                                    "Code: $code (Resent to your device)",
+                                    duration: const Duration(seconds: 10),
+                                    backgroundColor: Colors.blue.shade800,
+                                    colorText: Colors.white,
+                                    snackPosition: SnackPosition.TOP,
+                                  );
+                                }
                              } catch (_) {}
                           },
                           child: const Text(

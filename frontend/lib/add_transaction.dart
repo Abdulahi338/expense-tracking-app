@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'home.dart';
+import 'package:get/get.dart';
+import 'app_routes.dart';
 
 class AddTransactionScreen extends StatefulWidget {
   const AddTransactionScreen({super.key});
@@ -72,8 +73,12 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     if (_amountController.text.isEmpty ||
         _selectedCategory == null ||
         _selectedPaymentMethod == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill all required fields" , style: TextStyle(color: Colors.red),)),
+      Get.snackbar(
+        "Required Fields", 
+        "Please fill all required fields",
+        backgroundColor: Colors.red.withOpacity(0.1),
+        colorText: Colors.red,
+        snackPosition: SnackPosition.BOTTOM,
       );
       return;
     }
@@ -105,22 +110,14 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: Colors.green,
-            content: Text(
-              isExpense
-                  ? "Expense added successfully"
-                  : "Income added successfully",
-              style: const TextStyle(color: Colors.white),
-            ),
-          ),
+        Get.snackbar(
+          "Success",
+          isExpense ? "Expense added successfully" : "Income added successfully",
+          backgroundColor: Colors.green.withOpacity(0.1),
+          colorText: Colors.green,
+          snackPosition: SnackPosition.BOTTOM,
         );
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
-        );
+        Get.offNamed(AppRoutes.home);
       } else {
         // Try to parse error message from backend
         String errorMessage = "Failed to save transaction";
@@ -131,23 +128,21 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
           }
         } catch (_) {}
         
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: Colors.red,
-            content: Text(
-              errorMessage,
-              style: const TextStyle(color: Colors.white),
-            ),
-          ),
+        Get.snackbar(
+          "Error",
+          errorMessage,
+          backgroundColor: Colors.red.withOpacity(0.1),
+          colorText: Colors.red,
+          snackPosition: SnackPosition.BOTTOM,
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: Colors.red,
-          content: Text("Error: ${e.toString()}", style: const TextStyle(color: Colors.white)),
-        ),
+      Get.snackbar(
+        "Error",
+        "Error: ${e.toString()}",
+        backgroundColor: Colors.red.withOpacity(0.1),
+        colorText: Colors.red,
+        snackPosition: SnackPosition.BOTTOM,
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);

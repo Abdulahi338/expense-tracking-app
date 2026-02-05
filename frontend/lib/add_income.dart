@@ -2,15 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:get/get.dart';
+import 'app_routes.dart';
 
-class AddIncomePage extends StatefulWidget {
-  const AddIncomePage({super.key});
+class AddIncomeScreen extends StatefulWidget {
+  const AddIncomeScreen({super.key});
 
   @override
-  State<AddIncomePage> createState() => _AddIncomePageState();
+  State<AddIncomeScreen> createState() => _AddIncomeScreenState();
 }
 
-class _AddIncomePageState extends State<AddIncomePage> {
+class _AddIncomeScreenState extends State<AddIncomeScreen> {
   final _formKey = GlobalKey<FormState>();
   final _storage = const FlutterSecureStorage();
 
@@ -69,23 +71,31 @@ class _AddIncomePageState extends State<AddIncomePage> {
         );
 
         if (response.statusCode == 200 || response.statusCode == 201) {
-          if (!mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Income Added Successfully ✅", style: TextStyle(color: Colors.white)), backgroundColor: Colors.green),
+          Get.snackbar(
+            "Success",
+            "Income Added Successfully ✅",
+            backgroundColor: Colors.green.withOpacity(0.1),
+            colorText: Colors.green,
+            snackPosition: SnackPosition.BOTTOM,
           );
-          Navigator.pop(context); // Go back
+          Get.offNamed(AppRoutes.home);
         } else {
-             if (!mounted) return;
-             ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Failed to save income", style: TextStyle(color: Colors.white)), backgroundColor: Colors.red),
+             Get.snackbar(
+               "Error",
+               "Failed to save income",
+               backgroundColor: Colors.red.withOpacity(0.1),
+               colorText: Colors.red,
+               snackPosition: SnackPosition.BOTTOM,
              );
         }
       } catch (e) {
-         if (mounted) {
-             ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text("Error: $e", style: const TextStyle(color: Colors.white)), backgroundColor: Colors.red),
-             );
-         }
+          Get.snackbar(
+            "Error",
+            "Error: $e",
+            backgroundColor: Colors.red.withOpacity(0.1),
+            colorText: Colors.red,
+            snackPosition: SnackPosition.BOTTOM,
+          );
       } finally {
         if(mounted) setState(() => _isLoading = false);
       }

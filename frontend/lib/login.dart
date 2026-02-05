@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'signup.dart';
-import 'home.dart';
-import 'forgot_password.dart';
+import 'package:get/get.dart';
+import 'app_routes.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -25,8 +24,12 @@ class _LoginScreenState extends State<LoginScreen> {
     final password = _passwordController.text;
 
     if (email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill in all fields")),
+      Get.snackbar(
+        "Error",
+        "Please fill in all fields",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withOpacity(0.1),
+        colorText: Colors.red,
       );
       return;
     }
@@ -36,8 +39,6 @@ class _LoginScreenState extends State<LoginScreen> {
     });
 
     try {
-      // Replace with your actual backend URL
-      // For Android Emulator use 10.0.2.2, for iOS/Web use localhost or IP
       final url = Uri.parse('http://localhost:5000/api/auth/login'); 
       
       final response = await http.post(
@@ -53,26 +54,32 @@ class _LoginScreenState extends State<LoginScreen> {
         await _storage.write(key: 'token', value: data['token']);
         await _storage.write(key: 'username', value: data['user']['username']);
         
-        if (mounted) {
-           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Login Successful!")),
-          );
-          // Navigate to Home
-           Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const HomeScreen()));
-        }
+        Get.snackbar(
+          "Success",
+          "Login Successful!",
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green.withOpacity(0.1),
+          colorText: Colors.green,
+        );
+        // Navigate to Home
+        Get.offAllNamed(AppRoutes.home);
       } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(data['message'] ?? "Login failed")),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: ${e.toString()}")),
+        Get.snackbar(
+          "Error",
+          data['message'] ?? "Login failed",
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.withOpacity(0.1),
+          colorText: Colors.red,
         );
       }
+    } catch (e) {
+      Get.snackbar(
+        "Error",
+        "Error: ${e.toString()}",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withOpacity(0.1),
+        colorText: Colors.red,
+      );
     } finally {
       if (mounted) {
         setState(() {
@@ -98,8 +105,8 @@ class _LoginScreenState extends State<LoginScreen> {
                 child: Container(
                   width: 300,
                   height: 300,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE3F2FD), // Light blue circle
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFE3F2FD), // Light blue circle
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -185,12 +192,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     Align(
                       alignment: Alignment.centerRight,
                       child: TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const ForgotPasswordScreen()),
-                          );
-                        },
+                        onPressed: () => Get.toNamed(AppRoutes.forgotPassword),
                         child: const Text(
                           "forgot password",
                           style: TextStyle(
@@ -242,12 +244,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             style: TextStyle(color: Colors.black54),
                           ),
                           GestureDetector(
-                            onTap: () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(builder: (context) => RegisterScreen()),
-                              );
-                            },
+                            onTap: () => Get.toNamed(AppRoutes.signup),
                             child: const Text(
                               "Sign Up", // Corrected from design "Log In" as it's typically Sign Up
                               style: TextStyle(

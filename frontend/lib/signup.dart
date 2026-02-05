@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'login.dart';
+import 'package:get/get.dart';
+import 'app_routes.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -23,8 +24,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final password = _passwordController.text;
 
     if (name.isEmpty || email.isEmpty || password.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please fill in all fields")),
+      Get.snackbar(
+        "Error",
+        "Please fill in all fields",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withOpacity(0.1),
+        colorText: Colors.red,
       );
       return;
     }
@@ -34,7 +39,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     });
 
     try {
-      // Replace with your actual backend URL
       final url = Uri.parse('http://localhost:5000/api/auth/register');
       
       final response = await http.post(
@@ -50,26 +54,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
       final data = jsonDecode(response.body);
 
       if (response.statusCode == 201) {
-        if (mounted) {
-           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Account Created! Please Login.")),
-          );
-          // Navigate to Login
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
-        }
+        Get.snackbar(
+          "Success",
+          "Account Created! Please Login.",
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green.withOpacity(0.1),
+          colorText: Colors.green,
+        );
+        // Navigate to Login
+        Get.offAllNamed(AppRoutes.login);
       } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(data['message'] ?? "Registration failed")),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Error: ${e.toString()}")),
+        Get.snackbar(
+          "Error",
+          data['message'] ?? "Registration failed",
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.withOpacity(0.1),
+          colorText: Colors.red,
         );
       }
+    } catch (e) {
+      Get.snackbar(
+        "Error",
+        "Error: ${e.toString()}",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withOpacity(0.1),
+        colorText: Colors.red,
+      );
     } finally {
       if (mounted) {
         setState(() {
@@ -95,8 +105,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 child: Container(
                   width: 300,
                   height: 300,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE3F2FD), // Light blue circle
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFE3F2FD), // Light blue circle
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -236,9 +246,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             style: TextStyle(color: Colors.black54),
                           ),
                           GestureDetector(
-                            onTap: () {
-                              Navigator.pop(context); // Go back to login
-                            },
+                            onTap: () => Get.back(),
                             child: const Text(
                               "Log In",
                               style: TextStyle(

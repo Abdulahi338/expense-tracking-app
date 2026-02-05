@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'login.dart';
+import 'package:get/get.dart';
+import 'app_routes.dart';
 import 'analysis.dart';
-import 'add_transaction.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -30,7 +30,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onTabTapped(int index) {
-    if (index == 1) return; // Middle button handled by FAB
+    if (index == 1) return; 
     setState(() {
       _currentIndex = index;
     });
@@ -51,15 +51,13 @@ class _HomeScreenState extends State<HomeScreen> {
         onTap: _onTabTapped,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.add_box, size: 0), label: ""), // Placeholder for FAB
+          BottomNavigationBarItem(icon: Icon(Icons.add_box, size: 0), label: ""), 
           BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: "Analysis"),
         ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-           Navigator.push(context, MaterialPageRoute(builder: (_) => const AddTransactionScreen()));
-        },
+        onPressed: () => Get.toNamed(AppRoutes.addTransaction),
         backgroundColor: Colors.blue,
         shape: const CircleBorder(),
         child: const Icon(Icons.add, color: Colors.white),
@@ -98,7 +96,7 @@ class _HomeContentState extends State<HomeContent> {
       
       if (token == null) {
         // Not logged in, go to login
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
+        Get.offAllNamed(AppRoutes.login);
         return;
       }
       
@@ -175,7 +173,7 @@ class _HomeContentState extends State<HomeContent> {
 
   Future<void> _logout() async {
     await _storage.delete(key: 'token');
-    Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginScreen()));
+    Get.offAllNamed(AppRoutes.login);
   }
 
   @override
