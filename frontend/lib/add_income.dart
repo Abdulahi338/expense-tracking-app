@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AddIncomePage extends StatefulWidget {
   const AddIncomePage({super.key});
@@ -11,6 +12,7 @@ class AddIncomePage extends StatefulWidget {
 
 class _AddIncomePageState extends State<AddIncomePage> {
   final _formKey = GlobalKey<FormState>();
+  final _storage = const FlutterSecureStorage();
 
   final TextEditingController amountController = TextEditingController();
   final TextEditingController dateController = TextEditingController();
@@ -46,7 +48,8 @@ class _AddIncomePageState extends State<AddIncomePage> {
       setState(() => _isLoading = true);
       
       try {
-        final url = Uri.parse('http://localhost:5000/api/incomes');
+        final token = await _storage.read(key: 'token');
+        final url = Uri.parse('http://localhost:5000/api/incomes/add-income');
         
         final body = {
             "title": selectedSource, // Default title to source
@@ -58,7 +61,10 @@ class _AddIncomePageState extends State<AddIncomePage> {
 
         final response = await http.post(
           url,
-          headers: {'Content-Type': 'application/json'},
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
           body: jsonEncode(body),
         );
 

@@ -2,7 +2,7 @@ const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-const JWT_SECRET = "Abc1234"; // Make sure to match middleware or use .env
+const JWT_SECRET = process.env.JWT_SECRET;
 
 /* ===== REGISTER ===== */
 exports.register = async (req, res) => {

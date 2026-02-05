@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'home.dart';
 
 class AddTransactionScreen extends StatefulWidget {
@@ -11,6 +12,7 @@ class AddTransactionScreen extends StatefulWidget {
 }
 
 class _AddTransactionScreenState extends State<AddTransactionScreen> {
+  final _storage = const FlutterSecureStorage();
   // 0 = Expense, 1 = Income
   int _selectedTab = 0;
 
@@ -79,9 +81,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     setState(() => _isLoading = true);
 
     try {
+      final token = await _storage.read(key: 'token');
       final isExpense = _selectedTab == 0;
 
-      final endpoint = isExpense ? "/api/expenses" : "/api/incomes";
+      final endpoint = isExpense ? "/api/expenses/add-expense" : "/api/incomes/add-income";
 
       final body = {
         "title": _selectedCategory!, // Use category as title since field is removed
@@ -94,7 +97,10 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
 
       final response = await http.post(
         Uri.parse("$baseUrl$endpoint"),
-        headers: {"Content-Type": "application/json"},
+        headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer $token"
+        },
         body: jsonEncode(body),
       );
 
