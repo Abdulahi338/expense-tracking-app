@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'login.dart';
+import 'reset_password.dart';
 
 class OTPVerificationScreen extends StatefulWidget {
   final String emailOrPhone;
@@ -67,12 +68,15 @@ class _OTPVerificationScreenState extends State<OTPVerificationScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text("Code Verified Successfully!")),
           );
-          // For now, navigate back to login as "password reset demo"
-          // In real app, navigate to ResetPasswordScreen
-          Navigator.pushAndRemoveUntil(
+          
+          Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const LoginScreen()),
-            (route) => false,
+            MaterialPageRoute(
+              builder: (_) => ResetPasswordScreen(
+                email: widget.emailOrPhone,
+                code: otp,
+              ),
+            ),
           );
         }
       } else {

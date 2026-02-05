@@ -117,3 +117,36 @@ exports.verifyOTP = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+/* ===== RESET PASSWORD ===== */
+exports.resetPassword = async (req, res) => {
+  try {
+    const { email, code, newPassword } = req.body;
+
+    // Verify code one last time to ensure authorized reset
+    const user = await User.findOne({
+      email,
+      resetCode: code,
+      resetCodeExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: "Invalid or expired session. Please request a new code." });
+    }
+
+    // Hash new password
+    const hashed = await bcrypt.hash(newPassword, 10);
+    user.password = hashed;
+
+    // Clear reset data
+    user.resetCode = undefined;
+    user.resetCodeExpires = undefined;
+
+    await user.save();
+
+    res.json({ message: "Password updated successfully" });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
